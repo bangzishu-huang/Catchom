@@ -13,7 +13,7 @@ COLORS = {
 
 MONSTER_DATA = {
    'Plumette': {'element': 'plant', 'health': 90},
-   'Iverion': {'element': 'plant', 'health': 140},
+   'Ivieron': {'element': 'plant', 'health': 140},
    'Pluma': {'element': 'plant', 'health': 160},
    'Sparchu': {'element': 'fire', 'health': 70},
    'Cindrill': {'element': 'fire', 'health': 100},
