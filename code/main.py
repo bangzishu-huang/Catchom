@@ -3,7 +3,8 @@ from support import *
 from timed import Timer
 from monsters import Monster, Opponent
 from random import choice
-from ui import UI
+from ui import *
+from attack import AttackAnimationSprite
 
 class Game:
     def __init__(self):
@@ -26,6 +27,7 @@ class Game:
         self.opponent = Opponent(opponent_name, self.front_surfs[opponent_name], self.all_sprites)
 
         self.ui = UI(self.monster, self.player_monsters, self.simple_surfs, self.get_input)
+        self.opponent_ui = OpponentUI(self.opponent)
         self.timers = {'player end': Timer(1000, func = self.opponent_turn), 'opponent end': Timer(1000, func = self.player_turn)}
 
 
@@ -41,7 +43,7 @@ class Game:
         attack_data = ABILITIES_DATA[attack]
         attack_multiplier = ELEMENT_DATA[attack_data['element']][target.element]
         target.health -= attack_data['damage'] * attack_multiplier
-        print(f'{target.health}/{target.max_health}')
+        AttackAnimationSprite(target, self.attack_frames[attack_data['animation']], self.all_sprites)
 
     def opponent_turn(self):
         attack = choice(self.opponent.abilities)
@@ -65,6 +67,7 @@ class Game:
         self.bg_surfs = folder_importer('code', 'images', 'other')
         self.bg_surfs['bg'] = pygame.transform.scale(self.bg_surfs['bg'], (WINDOW_WIDTH, WINDOW_HEIGHT))
         self.simple_surfs = folder_importer('code', 'images', 'simple')
+        self.attack_frames = title_importer(4, 'code', 'images', 'attacks')
 
     def draw_monster_floor(self):
         for sprite in self.all_sprites:
@@ -86,6 +89,7 @@ class Game:
             self.draw_monster_floor()
             self.all_sprites.draw(self.display_surface)
             self.ui.draw()
+            self.opponent_ui.draw()
             pygame.display.update()
 
         pygame.quit()
