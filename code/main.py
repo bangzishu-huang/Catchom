@@ -5,6 +5,7 @@ from monsters import *
 from random import choice, sample
 from ui import *
 from attack import AttackAnimationSprite
+import asyncio
 
 class Game:
     def __init__(self):
@@ -187,7 +188,7 @@ class Game:
     def draw_escape_screen(self):
         self.draw_end_screen('AWW MAN...', COLORS['gray'])
 
-    def run(self):
+    async def run(self):
         while self.running:
             dt = self.clock.tick() / 1000
             for event in pygame.event.get():
@@ -233,9 +234,10 @@ class Game:
                 self.draw_escape_screen()
 
             pygame.display.update()
+            await asyncio.sleep(0)
 
         pygame.quit()
 
 if __name__ == '__main__':
     game = Game()
-    game.run()
+    asyncio.run(game.run())
