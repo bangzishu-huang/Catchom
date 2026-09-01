@@ -9,6 +9,7 @@ from attack import AttackAnimationSprite
 class Game:
     def __init__(self):
         pygame.init()
+        pygame.mixer.set_num_channels(16)
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption('Catchom')
         self.clock = pygame.time.Clock()
@@ -27,9 +28,11 @@ class Game:
         self.play_again_rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100)
         self.player_active = True
         self.state = 'start'
+        self.opponent_defeated = 0
 
     def start_run(self):
         self.all_sprites.empty()
+        self.opponent_defeated = 0
         player_monster_list = sample(list(MONSTER_DATA.keys()), 3)
         self.player_monsters = [Monster(name, self.back_surfs[name]) for name in player_monster_list]
         card_w, card_h, spacing = 260, 320, 60
@@ -65,7 +68,8 @@ class Game:
             self.all_sprites.add(self.monster)
             self.ui.monster = self.monster 
         elif state == 'escape':
-            self.running = False
+            self.state = 'escape'
+            return
         self.player_active = False
         self.timers['player end'].activate()
 
@@ -80,6 +84,10 @@ class Game:
         if self.opponent.health <= 0:
             self.player_active = True
             self.opponent.kill()
+            self.opponent_defeated += 1
+            if self.opponent_defeated >= 5:
+                self.state = 'win'
+                return
             monster_name = choice(list(MONSTER_DATA.keys()))
             self.opponent = Opponent(monster_name, self.front_surfs[monster_name], self.all_sprites)
             self.opponent_ui.monster = self.opponent
@@ -97,7 +105,7 @@ class Game:
                 self.all_sprites.add(self.monster)
                 self.ui.monster = self.monster
             else:
-                self.state = 'game_over'
+                self.state = 'lose'
 
     def update_timers(self):
         for timer in self.timers.values():
@@ -149,15 +157,15 @@ class Game:
             self.display_surface.blit(sprite_surf, sprite_rect)
 
             name_surf = self.label_font.render(monster.name, True, COLORS['black'])
-            name_rect = name_surf.get_frect(center = (rect.centerx, rect.bottom - 60))
+            name_rect = name_surf.get_frect(center = (rect.centerx, rect.bottom - 70))
             self.display_surface.blit(name_surf, name_rect)
 
             element_surf = self.label_font.render(monster.element.capitalize(), True, COLORS['gray'])
-            element_rect = element_surf.get_frect(center = (rect.centerx, rect.bottom - 30))
+            element_rect = element_surf.get_frect(center = (rect.centerx, rect.bottom - 40))
             self.display_surface.blit(element_surf, element_rect)
 
-    def draw_game_over_screen(self):
-        title_surf = self.gameover_font.render('GAME OVER', True, COLORS['red'])
+    def draw_end_screen(self, text, color):
+        title_surf = self.gameover_font.render(text, True, color)                
         title_rect = title_surf.get_frect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 80))
         self.display_surface.blit(title_surf, title_rect)
 
@@ -169,6 +177,15 @@ class Game:
         play_again_surf = self.button_font.render('PLAY AGAIN', True, COLORS['black'])
         play_again_text_rect = play_again_surf.get_frect(center = self.play_again_rect.center)
         self.display_surface.blit(play_again_surf, play_again_text_rect)
+
+    def draw_win_screen(self):
+            self.draw_end_screen('YOU WIN!', COLORS['black'])
+
+    def draw_lose_screen(self):
+            self.draw_end_screen('GAME OVER', COLORS['gray'])
+
+    def draw_escape_screen(self):
+        self.draw_end_screen('AWW MAN...', COLORS['gray'])
 
     def run(self):
         while self.running:
@@ -188,7 +205,7 @@ class Game:
                                 self.selection_monster(chosen)
                                 break
 
-                    elif self.state == 'game_over' and self.play_again_rect.collidepoint(event.pos):
+                    elif self.state in ('lose', 'win', 'escape') and self.play_again_rect.collidepoint(event.pos):
                         self.start_run()
 
             if self.state == 'battle':
@@ -208,10 +225,14 @@ class Game:
                 self.all_sprites.draw(self.display_surface)
                 self.ui.draw()
                 self.opponent_ui.draw()
-            elif self.state == 'game_over':
-                self.draw_game_over_screen()
+            elif self.state == 'lose':
+                self.draw_lose_screen()
+            elif self.state == 'win':
+                self.draw_win_screen()
+            elif self.state == 'escape':
+                self.draw_escape_screen()
 
-        pygame.display.update()
+            pygame.display.update()
 
         pygame.quit()
 
