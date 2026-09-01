@@ -19,28 +19,48 @@ class UI:
         self.player_monsters = player_monsters
         self.available_monster = [monster for monster in self.player_monsters if monster != self.monster and monster.health > 0]
         self.switch_index = 0
+        self.keys_pressed = set()  # populated from KEYDOWN events each frame
+
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            self.keys_pressed.add(event.key)
 
     def input(self):
-        keys = pygame.key.get_just_pressed()
+        keys = self.keys_pressed  # set of key constants pressed this frame
+
         if self.state == 'general':
-            self.general_index['row'] = (self.general_index['row'] + int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])) % self.rows
-            self.general_index['col'] = (self.general_index['col'] + int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])) % self.cols
-            if keys[pygame.K_SPACE]: 
+            if pygame.K_DOWN in keys:
+                self.general_index['row'] = (self.general_index['row'] + 1) % self.rows
+            if pygame.K_UP in keys:
+                self.general_index['row'] = (self.general_index['row'] - 1) % self.rows
+            if pygame.K_RIGHT in keys:
+                self.general_index['col'] = (self.general_index['col'] + 1) % self.cols
+            if pygame.K_LEFT in keys:
+                self.general_index['col'] = (self.general_index['col'] - 1) % self.cols
+            if pygame.K_SPACE in keys:
                 self.state = self.general_options[self.general_index['col'] + self.general_index['row'] * 2]
 
         elif self.state == 'attack':
-            self.attack_index['row'] = (self.attack_index['row'] + int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])) % self.rows
-            self.attack_index['col'] = (self.attack_index['col'] + int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])) % self.cols
-            if keys[pygame.K_SPACE]:
+            if pygame.K_DOWN in keys:
+                self.attack_index['row'] = (self.attack_index['row'] + 1) % self.rows
+            if pygame.K_UP in keys:
+                self.attack_index['row'] = (self.attack_index['row'] - 1) % self.rows
+            if pygame.K_RIGHT in keys:
+                self.attack_index['col'] = (self.attack_index['col'] + 1) % self.cols
+            if pygame.K_LEFT in keys:
+                self.attack_index['col'] = (self.attack_index['col'] - 1) % self.cols
+            if pygame.K_SPACE in keys:
                 attack = self.monster.abilities[self.attack_index['col'] + self.attack_index['row'] * 2]
                 self.get_input(self.state, attack)
                 self.state = 'general'
 
         elif self.state == 'switch':
             if self.available_monster:
-                self.switch_index = (self.switch_index + int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])) % len(self.available_monster)
-        
-                if keys[pygame.K_SPACE]:
+                if pygame.K_DOWN in keys:
+                    self.switch_index = (self.switch_index + 1) % len(self.available_monster)
+                if pygame.K_UP in keys:
+                    self.switch_index = (self.switch_index - 1) % len(self.available_monster)
+                if pygame.K_SPACE in keys:
                     self.get_input(self.state, self.available_monster[self.switch_index])
                     self.state = 'general'
 
@@ -51,11 +71,13 @@ class UI:
         elif self.state == 'escape':
             self.get_input('escape')
 
-        if keys[pygame.K_ESCAPE]:
+        if pygame.K_ESCAPE in keys:
             self.state = 'general'
             self.general_index = {'col': 0, 'row': 0}
             self.attack_index = {'col': 0, 'row': 0}
             self.switch_index = 0
+
+        self.keys_pressed = set()  # clear after processing
 
     def switch(self):
         rect = pygame.FRect(self.left - 10, WINDOW_HEIGHT - 360, 500, 340)

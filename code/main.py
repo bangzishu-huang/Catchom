@@ -1,3 +1,9 @@
+# /// script
+# dependencies = [
+#     "pygame-ce",
+# ]
+# ///
+
 from settings import *
 from support import *
 from timed import Timer
@@ -16,13 +22,12 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.import_assets()
-        self.audio['music'].play(-1)
         self.all_sprites = pygame.sprite.Group()
         
-        self.title_font = pygame.font.Font(join('code', 'font', 'font.ttf'), 80)
-        self.button_font = pygame.font.Font(join('code', 'font', 'font.ttf'), 40)
-        self.label_font = pygame.font.Font(join('code', 'font', 'font.ttf'), 26)
-        self.gameover_font = pygame.font.Font(join('code', 'font', 'font.ttf'), 90)
+        self.title_font = pygame.font.Font(join('font', 'font.ttf'), 80)
+        self.button_font = pygame.font.Font(join('font', 'font.ttf'), 40)
+        self.label_font = pygame.font.Font(join('font', 'font.ttf'), 26)
+        self.gameover_font = pygame.font.Font(join('font', 'font.ttf'), 90)
         self.start_button_rect = pygame.Rect(0, 0, 260, 80)
         self.start_button_rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100)
         self.play_again_rect = pygame.Rect(0, 0, 320, 80)
@@ -30,6 +35,7 @@ class Game:
         self.player_active = True
         self.state = 'start'
         self.opponent_defeated = 0
+        self.music_started = False
 
     def start_run(self):
         self.all_sprites.empty()
@@ -113,13 +119,13 @@ class Game:
             timer.update()
 
     def import_assets(self):
-        self.back_surfs = folder_importer('code', 'images', 'back')
-        self.front_surfs = folder_importer('code', 'images', 'front')
-        self.bg_surfs = folder_importer('code', 'images', 'other')
+        self.back_surfs = folder_importer('images', 'back')
+        self.front_surfs = folder_importer('images', 'front')
+        self.bg_surfs = folder_importer('images', 'other')
         self.bg_surfs['bg'] = pygame.transform.scale(self.bg_surfs['bg'], (WINDOW_WIDTH, WINDOW_HEIGHT))
-        self.simple_surfs = folder_importer('code', 'images', 'simple')
-        self.attack_frames = title_importer(4, 'code', 'images', 'attacks')
-        self.audio = audio_importer('code', 'audio')
+        self.simple_surfs = folder_importer('images', 'simple')
+        self.attack_frames = title_importer(4, 'images', 'attacks')
+        self.audio = audio_importer('audio')
 
     def draw_monster_floor(self):
         for sprite in self.all_sprites:
@@ -188,12 +194,19 @@ class Game:
     def draw_escape_screen(self):
         self.draw_end_screen('AWW MAN...', COLORS['gray'])
 
-    async def run(self):
+    async def main(self):
         while self.running:
             dt = self.clock.tick() / 1000
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+
+                if not self.music_started and event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
+                    self.audio['music'].play(-1)
+                    self.music_started = True
+
+                if self.state == 'battle' and self.player_active and event.type == pygame.KEYDOWN:
+                    self.ui.handle_event(event)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.state == 'start' and self.start_button_rect.collidepoint(event.pos):
@@ -240,4 +253,4 @@ class Game:
 
 if __name__ == '__main__':
     game = Game()
-    asyncio.run(game.run())
+    asyncio.run(game.main())
