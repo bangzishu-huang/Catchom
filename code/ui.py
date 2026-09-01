@@ -37,11 +37,12 @@ class UI:
                 self.state = 'general'
 
         elif self.state == 'switch':
-            self.switch_index = (self.switch_index + int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])) % len(self.available_monster)
-
-            if keys[pygame.K_SPACE]:
-                self.get_input(self.state, self.available_monster[self.switch_index])
-                self.state = 'general'
+            if self.available_monster:
+                self.switch_index = (self.switch_index + int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])) % len(self.available_monster)
+        
+                if keys[pygame.K_SPACE]:
+                    self.get_input(self.state, self.available_monster[self.switch_index])
+                    self.state = 'general'
 
         elif self.state == 'heal':
             self.get_input('heal')
@@ -57,9 +58,9 @@ class UI:
             self.switch_index = 0
 
     def switch(self):
-        rect = pygame.FRect(self.left - 10, WINDOW_HEIGHT - 220, 400, 200)
-        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 4)
-        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 4)
+        rect = pygame.FRect(self.left - 10, WINDOW_HEIGHT - 360, 500, 340)
+        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 20)
+        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 20)
 
         v_offset = 0 if self.switch_index < self.visible_monsters else - (self.switch_index - self.visible_monsters + 1) * rect.height / self.visible_monsters
         for i in range(len(self.available_monster)):
@@ -68,18 +69,18 @@ class UI:
             color = COLORS['gray'] if i == self.switch_index else COLORS['black']
             name = self.available_monster[i].name
             simple_surfs = self.simple_surfs[name]
-            simple_rect = simple_surfs.get_frect(center = (x - 100, y))
+            simple_rect = simple_surfs.get_frect(center = (x - 140, y))
 
             text_surf = self.font.render(name, True, color)
-            text_rect = text_surf.get_frect(midleft = (x, y))
+            text_rect = text_surf.get_frect(midleft = (x - 30, y))
             if rect.collidepoint(text_rect.center):
                 self.display_surface.blit(text_surf, text_rect)
                 self.display_surface.blit(simple_surfs, simple_rect)
 
     def quad_select(self, index, options):
         rect = pygame.FRect(self.left - 10 , WINDOW_HEIGHT - 320, 500, 300)
-        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 4)
-        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 4)
+        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 20)
+        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 20)
 
         for col in range(self.cols):
             for row in range(self.rows):
@@ -94,8 +95,8 @@ class UI:
 
     def stats(self):
         rect = pygame.FRect(self.left, self.top, 250, 80)
-        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 4)
-        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 4)
+        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 20)
+        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 20)
 
         name_surf = self.font.render(self.monster.name, True, COLORS['black'])
         name_rect = name_surf.get_frect(topleft = rect.topleft + pygame.Vector2(rect.width * 0.05, 12))
@@ -112,6 +113,7 @@ class UI:
 
     def update(self):
         self.input()
+        self.available_monster = [monster for monster in self.player_monsters if monster != self.monster and monster.health > 0]
 
     def draw(self):
         match self.state:
@@ -130,8 +132,8 @@ class OpponentUI:
 
     def draw(self):
         rect = pygame.FRect((0, 0), (250, 80)).move_to(midleft = (500, self.monster.rect.centery))
-        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 4)
-        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 4)
+        pygame.draw.rect(self.display_surface, COLORS['white'], rect, 0, 20)
+        pygame.draw.rect(self.display_surface, COLORS['gray'], rect, 4, 20)
 
         name_surf = self.font.render(self.monster.name, True, COLORS['black'])
         name_rect = name_surf.get_frect(topleft = rect.topleft + pygame.Vector2(rect.width * 0.05, 12))
