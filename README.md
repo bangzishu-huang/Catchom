@@ -5,7 +5,7 @@ This game is a creature battleground game, where you have your creatures and you
 
 I originally made this game because growing up I used to love watching pokemon. And by making this project I was also able to learn how to use python to set up certain types of data and display them throughout the game. I gained a lot more experience designing user interfaces in the game, while it isn't the best, I tried my hardest with python and feel like I've improved a lot. This allowed me to just improve overall in game development, and reinforced a lot of the python learning I've been doing. Last but not least, I am ust really happy I could make a game inspired by my childhood!
 
-Controls: Arrow keys to select the moves, space to confirm
+Controls: Arrow keys to select the moves, space to confirm your respective action
 
 AI Used: None
 
